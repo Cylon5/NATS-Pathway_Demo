@@ -8,7 +8,7 @@ import random
 async def publish_telemetry():
     # Connect to the NATS server
     nc = await nats.connect("nats://localhost:4222")
-    vehicle_ids = [f"TRUCK-{i}" for i in range(1, 6)]  # Simulate 5 trucks 
+    vehicle_ids = [f"TRUCK-{i}" for i in range(1, 6)]  # Simulate 5 trucks
 
     while True:
         # Generate random telemetry data
@@ -21,6 +21,9 @@ async def publish_telemetry():
             "fuel_level": random.randint(10, 100),   # Critical if <20
             "brake_health": random.randint(50, 100)  # Critical if <60
         }
+        # Print the telemetry data
+        print(f"Publishing: {telemetry}")
+        
         # Publish telemetry data as JSON
         await nc.publish("fleet.telemetry", json.dumps(telemetry).encode())
         await asyncio.sleep(1)
