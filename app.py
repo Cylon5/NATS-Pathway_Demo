@@ -12,7 +12,7 @@ class TelemetrySchema(pw.Schema):
 
 # Ingest telemetry data from NATS
 telemetry_table = pw.io.nats.read(
-   uri="nats://127.0.0.1:4222",
+   uri="nats://host.docker.internal:4222",
    topic="fleet.telemetry",
    format="json",
    schema=TelemetrySchema
@@ -51,7 +51,7 @@ pw.io.nats.write(
        timestamp=pw.this.timestamp,
        alert_type=pw.this.alert_type
    ),
-   uri="nats://127.0.0.1:4222",
+   uri="nats://host.docker.internal:4222",
    topic="fleet.alerts",
    format="json"
 )
