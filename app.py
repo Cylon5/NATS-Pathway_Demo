@@ -8,7 +8,7 @@ class TelemetrySchema(pw.Schema):
    lon: float
    engine_temp: int
    fuel_level: int
-   brake_health: int 
+   brake_health: int
 
 # Ingest telemetry data from NATS
 telemetry_table = pw.io.nats.read(
@@ -31,7 +31,6 @@ def detect_alerts(engine_temp, fuel_level, brake_health):
    return alerts
 
 # Apply the UDF and generate multiple alerts
-
 alerts = telemetry_table.select(
    vehicle_id=pw.this.vehicle_id,
    timestamp=pw.this.timestamp,
