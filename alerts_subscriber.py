@@ -7,10 +7,10 @@ async def receive_alerts():
 
     async def alert_handler(msg):
         alert = json.loads(msg.data.decode())
-        print(f"ALERT: Vehicle {alert['vehicle_id']} - {alert['alert_type']} at {alert['timestamp']}")
+        print(f"ALERT: Turbine {alert['turbine_id']} - {alert['alert_type']} at {alert['timestamp']}")
 
-    await nc.subscribe("fleet.alerts", cb=alert_handler)
-    print("Subscribed to 'fleet.alerts' subject.")
+    await nc.subscribe("turbine.alerts", cb=alert_handler)
+    print("Subscribed to 'turbine.alerts' subject.")
 
     while True:
         await asyncio.sleep(1)

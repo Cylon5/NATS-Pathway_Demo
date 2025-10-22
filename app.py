@@ -2,42 +2,39 @@ import pathway as pw
 
 # Define the telemetry schema
 class TelemetrySchema(pw.Schema):
-   vehicle_id: str
+   turbine_id: str
    timestamp: str
-   lat: float
-   lon: float
-   engine_temp: int
-   fuel_level: int
-   brake_health: int
+   blade_length: float
+   blade_width: float
+   vibration: int
+   temperature: int
+   
 
 # Ingest telemetry data from NATS
 telemetry_table = pw.io.nats.read(
    uri="nats://host.docker.internal:4222",
-   topic="fleet.telemetry",
+   topic="turbine.telemetry",
    format="json",
    schema=TelemetrySchema
 )
 
 # Define a UDF for detecting alerts with if conditions
 @pw.udf
-def detect_alerts(engine_temp, fuel_level, brake_health):
+def detect_alerts(vibration, temperature):
    alerts = []
-   if engine_temp > 100:
-       alerts.append("High Engine Temp")
-   if fuel_level < 20:
-       alerts.append("Low Fuel Level")
-   if brake_health < 60:
-       alerts.append("Poor Brake Health")
+   if vibration > 80:
+       alerts.append("High Vibration Detected")
+   if temperature > 100:
+       alerts.append("High Temperature Detected")
    return alerts
 
 # Apply the UDF and generate multiple alerts
 alerts = telemetry_table.select(
-   vehicle_id=pw.this.vehicle_id,
+   turbine_id=pw.this.turbine_id,
    timestamp=pw.this.timestamp,
    alert_type=detect_alerts(
-       pw.this.engine_temp,
-       pw.this.fuel_level,
-       pw.this.brake_health
+       pw.this.vibration,
+       pw.this.temperature,
    )
 )
 
@@ -47,12 +44,12 @@ alerts = alerts.flatten(pw.this.alert_type).filter(pw.this.alert_type.is_not_non
 # Output alerts to another NATS subject
 pw.io.nats.write(
    alerts.select(
-       vehicle_id=pw.this.vehicle_id,
+       turbine_id=pw.this.turbine_id,
        timestamp=pw.this.timestamp,
        alert_type=pw.this.alert_type
    ),
    uri="nats://host.docker.internal:4222",
-   topic="fleet.alerts",
+   topic="turbine.alerts",
    format="json"
 )
 
